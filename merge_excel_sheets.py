@@ -104,8 +104,6 @@ worksheet_sp.autofilter('A1:U9999')
 # Save the sheet
 writer_sp.save()
 
-
-
 # Still working on finding a way to replace 0's in certain columns with No, and 1's with Yes
 # df = pd.read_excel("PSPS_MAIN.xlsx")
 # df.loc[df["REMOTE_MONITORING"] == 0, "REMOTE_MONITORING"] = "No"
