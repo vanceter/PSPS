@@ -4,17 +4,21 @@
 import pandas as pd
 import xlsxwriter
 
+file_path = "/Users/txvance/Documents/PSPS/"
+
 # NOTE each of the underlying xls files needs to have the PSLC value - in some of them, the column header needs to be renamed from PS Loc
 # Also need to make sure you export OpsTracker files with the file name option checked
+# Raw data files need to be here: /Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/
+# Output files will go here: /Users/txvance/Documents/PSPS/Tracker/
  
 # reading only the columns needed from each file
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
-f_sites = pd.read_excel("opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_STATUS','GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-f_gens = pd.read_excel("opstracker_generators.xlsx", usecols=['PSLC', 'FUEL_TYPE1'])
-f_cells = pd.read_excel("NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
-f_cells5g = pd.read_excel("norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
-f_pge = pd.read_excel("PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'Fire Tier', 'PSPS PROB', 'PG&E Fee Property'])
-f_vzb = pd.read_excel("PSPS_VZB_Sites.xlsx")
+f_sites = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_STATUS','GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
+f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_generators.xlsx", usecols=['PSLC', 'FUEL_TYPE1'])
+f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
+f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
+f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'Fire Tier', 'PSPS PROB', 'PG&E Fee Property'])
+f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
 
 # merging the files using PSLC as the index. There are some duplicates in gen and sites files, lots of duplicates in the cell info because of B2B and 5G gNodeBs
 # documentation on pandas merge https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html?highlight=merge#pandas.DataFrame.merge
@@ -47,7 +51,7 @@ concat_sp['IS_HUB'] = concat_sp['IS_HUB'].map({0:'No', 1:'Yes',"VZB FACILITY":"V
 # creating 2 new files, the PSPS_Main for Gennie, and a version of it with eNB/gNB for SP
 # Format the PSPS_MAIN sheet for Ops
 # establish the xlsxwriter functionality, defining "writer" as the variable for the workbook filename
-writer = pd.ExcelWriter('PSPS_MAIN.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
 concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
@@ -80,7 +84,7 @@ writer.save()
 
 # Format the PSPS_MAIN_SP sheet for SP
 # establish the xlsxwriter functionality, defining "writer" as the variable for the workbook filename
-writer_sp = pd.ExcelWriter('PSPS_MAIN_SP.xlsx', engine='xlsxwriter')
+writer_sp = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN_SP.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 concat_sp.to_excel(writer_sp, index = False, sheet_name='PSPS_MAIN_SP', columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY', 'eNodeB', 'GNODEB'])
 
