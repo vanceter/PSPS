@@ -5,6 +5,7 @@ import pandas as pd
 import xlsxwriter
 
 file_path = "/Users/txvance/Documents/PSPS/"
+file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 
 # NOTE each of the underlying xls files needs to have the PSLC value - in some of them, the column header needs to be renamed from PS Loc
 # Also need to make sure you export OpsTracker files with the file name option checked
