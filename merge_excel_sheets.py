@@ -42,12 +42,13 @@ concat_sp = pd.concat(frames_sp)
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
 
 # Bulk replace 0 for No and 1 for yes in the various columns
-concat_ops['REMOTE_MONITORING'] = concat_ops['REMOTE_MONITORING'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
-concat_ops['IS_HUB_MICROWAVE'] = concat_ops['IS_HUB_MICROWAVE'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
-concat_ops['IS_HUB'] = concat_ops['IS_HUB'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
-concat_sp['REMOTE_MONITORING'] = concat_sp['REMOTE_MONITORING'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
-concat_sp['IS_HUB_MICROWAVE'] = concat_sp['IS_HUB_MICROWAVE'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
-concat_sp['IS_HUB'] = concat_sp['IS_HUB'].map({0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"})
+map_dict = {0:'No', 1:'Yes',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"}
+concat_ops['REMOTE_MONITORING'] = concat_ops['REMOTE_MONITORING'].map(map_dict)
+concat_ops['IS_HUB_MICROWAVE'] = concat_ops['IS_HUB_MICROWAVE'].map(map_dict)
+concat_ops['IS_HUB'] = concat_ops['IS_HUB'].map(map_dict)
+concat_sp['REMOTE_MONITORING'] = concat_sp['REMOTE_MONITORING'].map(map_dict)
+concat_sp['IS_HUB_MICROWAVE'] = concat_sp['IS_HUB_MICROWAVE'].map(map_dict)
+concat_sp['IS_HUB'] = concat_sp['IS_HUB'].map(map_dict)
 
 # creating 2 new files, the PSPS_Main for Gennie, and a version of it with eNB/gNB for SP
 # Format the PSPS_MAIN sheet for Ops
