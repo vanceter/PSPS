@@ -1,4 +1,5 @@
-# 2022/02 Terry Vance (vanceter)
+#! /usr/bin/env python3
+# # 2022/02 Terry Vance (vanceter)
 # OpsTracker file merge for PSPS events.
 # importing the module
 import pandas as pd
@@ -102,7 +103,7 @@ cell_format_center_sp.set_align('center')
 worksheet_sp = writer_sp.sheets['PSPS_MAIN_SP']
 # Apply some formatting to groups of columns, including cell width and applying the cell formatting previously defined as appropriate
 worksheet_sp.set_column('A:A', 20, cell_format_center_sp)
-worksheet_sp.set_column('B:D', 10, cell_format_center_sp)
+worksheet_sp.set_column('B:D', 12, cell_format_center_sp)
 worksheet_sp.set_column('E:E', 18, cell_format_center_sp)
 worksheet_sp.set_column('F:G', 44)
 worksheet_sp.set_column('H:I', 22)
