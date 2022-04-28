@@ -1,4 +1,3 @@
-#! /usr/bin/env python3
 # # 2022/02 Terry Vance (vanceter)
 # OpsTracker file merge for PSPS events.
 # importing the module
