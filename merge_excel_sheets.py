@@ -91,8 +91,6 @@ workbook = writer.book
 # formatting for any cells/columns that need to be center justified
 cell_format_center = workbook.add_format()
 cell_format_center.set_align('center')
-
-
 # Define the worksheet variable
 worksheet = writer.sheets['PSPS_MAIN']
 # Apply some formatting to groups of columns, including cell width and applying the cell formatting previously defined as appropriate
@@ -121,6 +119,7 @@ writer.save()
 writer_sp = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN_SP.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 concat_sp.to_excel(writer_sp, index = False, sheet_name='PSPS_MAIN_SP', columns=['POWER_METER','PSLC', 'SITE_NAME', 'ADDRESS','CITY','COUNTY','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY', 'eNodeB', 'GNODEB'])
+concat_pgemaster.to_excel(writer_sp, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 
 # Establish the workbook variable
 workbook_sp = writer_sp.book
