@@ -19,6 +19,8 @@ f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstr
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
 f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
 f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'GO95_FIRE_ZONE_SECTOR', 'PSPS PROB', 'PG&E Fee Property'])
+# Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS
+f_pgemaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PGE_MASTER_LIST.xlsx", usecols=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 
 # Static files to capture sites that PGE provided but aren't in OT yet. Will result in some duplication, including sites with multiple meters
 f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
@@ -46,6 +48,8 @@ concat_ops = pd.concat(frames)
 # Remove the Engie and PGE unmatched after Gennie cleaned up OT 04/28/2022
 frames_sp = [f_merged, f_vzb, f_unmatched, f_engie]
 concat_sp = pd.concat(frames_sp)
+frames_pgemaster = [f_pgemaster]
+concat_pgemaster = pd.concat(frames_pgemaster)
 
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
 
@@ -62,7 +66,6 @@ concat_ops['IS_HUB'] = concat_ops['IS_HUB'].map(map_dict)
 map_dict_gen = {0:"NO", 1:"YES", None:"NO", "Operational":"YES", "Non-operational":"NO", "Y":"YES","N":"NO"}
 concat_ops['GEN_STATUS'] = concat_ops['GEN_STATUS'].map(map_dict_gen)
 concat_ops['GEN_PORTABLE_PLUG'] = concat_ops['GEN_PORTABLE_PLUG'].map(map_dict_gen)
-
 #concat_sp['PG&E Fee Property'] = concat_sp['PG&E Fee Property'].map(map_dict)
 #concat_sp['GEN_STATUS'] = concat_sp['GEN_STATUS'].map(map_dict)
 #concat_sp['FUEL_TYPE1'] = concat_sp['FUEL_TYPE1'].map(map_dict)
@@ -79,7 +82,8 @@ writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', 
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
 concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','POWER_COMPANY','GO95_FIRE_ZONE_SECTOR', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GEN_SIZE', 'FUEL_TYPE1', 'FUEL_TANK1', 'REMOTE_MONITORING', 'IS_HUB','IS_HUB_MICROWAVE', 'SITETECH_NAME','SITEMGR_NAME', 'SITE_STATUS'])
-
+# Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
+concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 # Establish the workbook variable
 workbook = writer.book
 
