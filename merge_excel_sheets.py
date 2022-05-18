@@ -16,11 +16,17 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
 f_sites = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GO95_FIRE_ZONE_SECTOR', 'SITE_STATUS', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY'])
 f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_generators.xlsx", usecols=['PSLC', 'GEN_STATUS', 'SERIALNUM', 'FUEL_TANK1', 'FUEL_TYPE1', 'MANUFACTURER', 'MODEL', 'GEN_SIZE'])
+# Rename column names for Gennie
+g={'GEN_STATUS':'GEN Y/N','FUEL_TANK1':'TANK SIZE','GEN_SIZE':'GEN SIZE','FUEL_TYPE1':'FUEL TYPE'}
+s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','POWER_COMPANY':'POWER COMPANY','SITE_STATUS':'SITE STATUS'}
+f_gens.rename(columns = g, inplace = True)
+f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
 f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
 f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'GO95_FIRE_ZONE_SECTOR', 'PSPS PROB', 'PG&E Fee Property'])
 # Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS
 f_pgemaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PGE_MASTER_LIST.xlsx", usecols=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
+f_ngmaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NAT_GAS_MASTER_LIST.xlsx", usecols=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
 
 # Static files to capture sites that PGE provided but aren't in OT yet. Will result in some duplication, including sites with multiple meters
 f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
@@ -50,30 +56,24 @@ frames_sp = [f_merged, f_vzb, f_unmatched, f_engie]
 concat_sp = pd.concat(frames_sp)
 frames_pgemaster = [f_pgemaster]
 concat_pgemaster = pd.concat(frames_pgemaster)
+frames_ngmaster = [f_ngmaster]
+concat_ngmaster = pd.concat(frames_ngmaster)
 
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
 
 # Bulk replace 0 for No and 1 for yes in the various columns
 map_dict = {0:'NO', 1:'YES',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES", "Operational":"YES","Y":"YES","N":"NO", "Diesel":"Diesel", "Propane":"Propane"}
 concat_ops['PG&E Fee Property'] = concat_ops['PG&E Fee Property'].map(map_dict)
-concat_ops['FUEL_TYPE1'] = concat_ops['FUEL_TYPE1'].map(map_dict)
+concat_ops['FUEL TYPE'] = concat_ops['FUEL TYPE'].map(map_dict)
 # This command seems to null out the field, removed it 5/2/2022
 #concat_ops['GEN_PORTABLE_PLUG_TYPE'] = concat_ops['GEN_PORTABLE_PLUG_TYPE'].map(map_dict)
-concat_ops['REMOTE_MONITORING'] = concat_ops['REMOTE_MONITORING'].map(map_dict)
-concat_ops['IS_HUB_MICROWAVE'] = concat_ops['IS_HUB_MICROWAVE'].map(map_dict)
-concat_ops['IS_HUB'] = concat_ops['IS_HUB'].map(map_dict)
+concat_ops['RM Y/N'] = concat_ops['RM Y/N'].map(map_dict)
+concat_ops['M/W HUB Y/N'] = concat_ops['M/W HUB Y/N'].map(map_dict)
+concat_ops['HUB Y/N'] = concat_ops['HUB Y/N'].map(map_dict)
 
 map_dict_gen = {0:"NO", 1:"YES", None:"NO", "Operational":"YES", "Non-operational":"NO", "Y":"YES","N":"NO"}
-concat_ops['GEN_STATUS'] = concat_ops['GEN_STATUS'].map(map_dict_gen)
-concat_ops['GEN_PORTABLE_PLUG'] = concat_ops['GEN_PORTABLE_PLUG'].map(map_dict_gen)
-#concat_sp['PG&E Fee Property'] = concat_sp['PG&E Fee Property'].map(map_dict)
-#concat_sp['GEN_STATUS'] = concat_sp['GEN_STATUS'].map(map_dict)
-#concat_sp['FUEL_TYPE1'] = concat_sp['FUEL_TYPE1'].map(map_dict)
-#concat_sp['GEN_PORTABLE_PLUG'] = concat_sp['GEN_PORTABLE_PLUG'].map(map_dict)
-#concat_sp['GEN_PORTABLE_PLUG_TYPE'] = concat_sp['GEN_PORTABLE_PLUG_TYPE'].map(map_dict)
-#concat_sp['REMOTE_MONITORING'] = concat_sp['REMOTE_MONITORING'].map(map_dict)
-#concat_sp['IS_HUB_MICROWAVE'] = concat_sp['IS_HUB_MICROWAVE'].map(map_dict)
-#concat_sp['IS_HUB'] = concat_sp['IS_HUB'].map(map_dict)
+concat_ops['GEN Y/N'] = concat_ops['GEN Y/N'].map(map_dict_gen)
+concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 
 # creating 2 new files, the PSPS_Main for Gennie, and a version of it with eNB/gNB for SP
 # Format the PSPS_MAIN sheet for Ops
@@ -81,9 +81,10 @@ concat_ops['GEN_PORTABLE_PLUG'] = concat_ops['GEN_PORTABLE_PLUG'].map(map_dict_g
 writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','POWER_COMPANY','GO95_FIRE_ZONE_SECTOR', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GEN_SIZE', 'FUEL_TYPE1', 'FUEL_TANK1', 'REMOTE_MONITORING', 'IS_HUB','IS_HUB_MICROWAVE', 'SITETECH_NAME','SITEMGR_NAME', 'SITE_STATUS'])
+concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS'])
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
+concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
 # Establish the workbook variable
 workbook = writer.book
 
@@ -96,17 +97,18 @@ worksheet = writer.sheets['PSPS_MAIN']
 # Apply some formatting to groups of columns, including cell width and applying the cell formatting previously defined as appropriate
 worksheet.set_column('A:B', 18, cell_format_center)
 worksheet.set_column('C:E', 9, cell_format_center)
-worksheet.set_column('F:F', 15, cell_format_center)
+worksheet.set_column('F:F', 45, cell_format_center)
 worksheet.set_column('G:G', 44)
 worksheet.set_column('H:I', 22)
-worksheet.set_column('J:J', 15, cell_format_center)
-worksheet.set_column('K:K', 15, cell_format_center)
-worksheet.set_column('L:M', 22, cell_format_center)
+worksheet.set_column('J:J', 12, cell_format_center)
+worksheet.set_column('K:K', 13, cell_format_center)
+worksheet.set_column('L:M', 14, cell_format_center)
 worksheet.set_column('N:N', 14, cell_format_center)
 worksheet.set_column('O:O', 18, cell_format_center)
-worksheet.set_column('P:P', 12, cell_format_center)
-worksheet.set_column('Q:R', 15, cell_format_center)
-worksheet.set_column('S:V', 23, cell_format_center)
+worksheet.set_column('P:Q', 12, cell_format_center)
+worksheet.set_column('R:R', 15, cell_format_center)
+worksheet.set_column('S:T', 20, cell_format_center)
+worksheet.set_column('U:V', 15, cell_format_center)
 worksheet.set_column('W:Y', 19, cell_format_center)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet.freeze_panes(1, 0)
@@ -120,6 +122,7 @@ writer_sp = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN_SP.x
 # Create the merged sheet and output to the file name based on the writer variable
 concat_sp.to_excel(writer_sp, index = False, sheet_name='PSPS_MAIN_SP', columns=['POWER_METER','PSLC', 'SITE_NAME', 'ADDRESS','CITY','COUNTY','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY', 'eNodeB', 'GNODEB'])
 concat_pgemaster.to_excel(writer_sp, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
+concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
 
 # Establish the workbook variable
 workbook_sp = writer_sp.book
