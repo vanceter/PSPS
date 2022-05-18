@@ -23,7 +23,7 @@ f_gens.rename(columns = g, inplace = True)
 f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
 f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
-f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'GO95_FIRE_ZONE_SECTOR', 'PSPS PROB', 'PG&E Fee Property'])
+f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'FIRE TIER', 'PSPS PROB', 'PG&E Fee Property'])
 # Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS
 f_pgemaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PGE_MASTER_LIST.xlsx", usecols=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 f_ngmaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NAT_GAS_MASTER_LIST.xlsx", usecols=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
@@ -120,7 +120,7 @@ writer.save()
 # establish the xlsxwriter functionality, defining "writer" as the variable for the workbook filename
 writer_sp = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN_SP.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
-concat_sp.to_excel(writer_sp, index = False, sheet_name='PSPS_MAIN_SP', columns=['POWER_METER','PSLC', 'SITE_NAME', 'ADDRESS','CITY','COUNTY','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY', 'eNodeB', 'GNODEB'])
+concat_sp.to_excel(writer_sp, index = False, sheet_name='PSPS_MAIN_SP', columns=['POWER METER','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY','FIELD ENGINEER','OPS MANAGER', 'POWER COMPANY', 'eNodeB', 'GNODEB'])
 concat_pgemaster.to_excel(writer_sp, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
 
