@@ -23,26 +23,26 @@ f_gens.rename(columns = g, inplace = True)
 f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
 f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
-f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'FIRE TIER', 'PSPS PROB', 'PG&E Fee Property'])
+#f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'FIRE TIER', 'PSPS PROB', 'PG&E Fee Property'])
 # Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS
 f_pgemaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PGE_MASTER_LIST.xlsx", usecols=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 f_ngmaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NAT_GAS_MASTER_LIST.xlsx", usecols=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
 
 # Static files to capture sites that PGE provided but aren't in OT yet. Will result in some duplication, including sites with multiple meters
 f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
-f_unmatched = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_PGE_unmatched_Sites.xlsx")
+f_unmatched = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_PGE_unmatched_Sites.xlsx", usecols=['POWER METER','PSPS PROB', 'PSLC','SITE NAME','ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'FUEL TYPE', 'RM Y/N', 'M/W HUB Y/N', 'HUB Y/N', 'FIELD ENGINEER', 'OPS MANAGER', 'POWER COMPANY'])
 f_engie = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_Engie_unmatched_Sites.xlsx")
 
 # merging the files using PSLC as the index. There are some duplicates in gen and sites files, lots of duplicates in the cell info because of B2B and 5G gNodeBs
 # documentation on pandas merge https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html?highlight=merge#pandas.DataFrame.merge
 f_merged = f_sites.merge(f_gens, left_on="PSLC", right_on="PSLC", how="left")
-f_merged = f_merged.merge(f_pge, left_on="PSLC", right_on="PSLC", how="left")
+#f_merged = f_merged.merge(f_pge, left_on="PSLC", right_on="PSLC", how="left")
 f_merged = f_merged.merge(f_cells, left_on="PSLC", right_on="PSLC", how="left")
 f_merged = f_merged.merge(f_cells5g, left_on="PSLC", right_on="PSLC", how="left")
 
 # same function but only combining the sites, gens and PSPS/PGE files for Ops
 f_merged_ops = f_sites.merge(f_gens, left_on="PSLC", right_on="PSLC", how="left")
-f_merged_ops = f_merged_ops.merge(f_pge, left_on="PSLC", right_on="PSLC", how="left")
+#f_merged_ops = f_merged_ops.merge(f_pge, left_on="PSLC", right_on="PSLC", how="left")
 # create a new dataframe to concatenate the merged data with a static VZB/VZS file of meter numbers from PGE for non-wireless locations
 # requires that the PSPS_VZB_Sites.xlsx file exist in the directory, same format as PSPS_MAIN, but with the random meters PGE provides for non-VZW locations in scope
 # uses pd.concat https://pandas.pydata.org/pandas-docs/stable/user_guide/merging.html
@@ -59,19 +59,24 @@ concat_pgemaster = pd.concat(frames_pgemaster)
 frames_ngmaster = [f_ngmaster]
 concat_ngmaster = pd.concat(frames_ngmaster)
 
+concat_ops['GEN Y/N'] = concat_ops['GEN Y/N'].fillna(0)
+concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].fillna(0)
+concat_ops['RM Y/N'] = concat_ops['RM Y/N'].fillna(0)
+concat_ops['M/W HUB Y/N'] = concat_ops['M/W HUB Y/N'].fillna(0)
+concat_ops['HUB Y/N'] = concat_ops['HUB Y/N'].fillna(0)
+
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
 
 # Bulk replace 0 for No and 1 for yes in the various columns
-map_dict = {0:'NO', 1:'YES',"VZB FACILITY":"VZB FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES", "Operational":"YES","Y":"YES","N":"NO", "Diesel":"Diesel", "Propane":"Propane"}
+map_dict = {0:'NO', 1:'YES',"VZB FACILITY":"VZB FACILITY", "FRONTIER FACILITY":"FRONTIER FACILITY","VZW RETAIL SALES":"VZW RETAIL SALES", "Operational":"YES","Y":"YES","N":"NO","NO":"NO","YES":"YES", "Diesel":"Diesel", "Propane":"Propane", "Pacific Gas & Electric":"PG&E"}
 concat_ops['PG&E Fee Property'] = concat_ops['PG&E Fee Property'].map(map_dict)
 concat_ops['FUEL TYPE'] = concat_ops['FUEL TYPE'].map(map_dict)
-# This command seems to null out the field, removed it 5/2/2022
-#concat_ops['GEN_PORTABLE_PLUG_TYPE'] = concat_ops['GEN_PORTABLE_PLUG_TYPE'].map(map_dict)
+concat_ops['POWER COMPANY'] = concat_ops['POWER COMPANY'].map(map_dict)
 concat_ops['RM Y/N'] = concat_ops['RM Y/N'].map(map_dict)
 concat_ops['M/W HUB Y/N'] = concat_ops['M/W HUB Y/N'].map(map_dict)
 concat_ops['HUB Y/N'] = concat_ops['HUB Y/N'].map(map_dict)
 
-map_dict_gen = {0:"NO", 1:"YES", None:"NO", "Operational":"YES", "Non-operational":"NO", "Y":"YES","N":"NO"}
+map_dict_gen = {0:"NO", 1:"YES", "Operational":"YES", "Non-operational":"NO","Not Operational":"NO", "Y":"YES","N":"NO","NO":"NO","YES":"YES","VZB FACILITY":"VZB FACILITY","FRONTIER FACILITY":"FRONTIER FACILITY", "VZW RETAIL SALES":"VZW RETAIL SALES"}
 concat_ops['GEN Y/N'] = concat_ops['GEN Y/N'].map(map_dict_gen)
 concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 
@@ -81,7 +86,7 @@ concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS'])
+concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
