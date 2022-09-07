@@ -1,5 +1,7 @@
 # # 2022/02 Terry Vance (vanceter)
 # OpsTracker file merge for PSPS events.
+# 2022/09 Mods to incorporate NG gens, 3rd party gens, formatting. Once this script is run, need to run the macro, then remove non PGE sites, update fuel type to Natural Gas on listed sites, update fuel type to 3rd Party on listed sites. 
+# Copy values for the block codes. Then remove the vlookup columns and the extra tabs.
 # importing the module
 import pandas as pd
 import xlsxwriter
@@ -24,9 +26,14 @@ f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
 f_cells5g = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/norcal_cell_info_5g.xlsx", usecols=['PSLC', 'GNODEB'])
 #f_pge = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_FIRE_TIER.xlsx", usecols=['PSLC', 'FIRE TIER', 'PSPS PROB', 'PG&E Fee Property'])
-# Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS
+# Pull in static PGE master file of latest PGE list of meters that they sent at the beginning of the season, used to reconcile which meters are in scope for PSPS; update with list from John Storm@ PGE
 f_pgemaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PGE_MASTER_LIST.xlsx", usecols=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
+# Manually update NAT_GAS_MASTER_LIST with updated dump from Gennie/Fuze - she is working to get it added to OT as a fuel type (09072022)
 f_ngmaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NAT_GAS_MASTER_LIST.xlsx", usecols=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
+# Update Rotating Block list with new sheet sent from PGE acct manager John Storm
+f_pge_outage_block = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/Verizon Wireless Rotating Outage Block Reference List.xlsx", usecols=['Meter #', 'Rotating Outage Block Code'])
+# Update 3RD_PARTY_MASTER_LIST file with report from: FUZE - COMPLIANCE - REPORTS - MORE REPORTS - ASSETS - GENERATOR; scroll down until the screen refreshes and all sites show up then download
+f_3rdpartymaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/3RD_PARTY_MASTER_LIST.xlsx", usecols=['PSLC', '3RD PARTY'])
 
 # Static files to capture sites that PGE provided but aren't in OT yet. Will result in some duplication, including sites with multiple meters
 f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
@@ -36,7 +43,7 @@ f_engie = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS
 # merging the files using PSLC as the index. There are some duplicates in gen and sites files, lots of duplicates in the cell info because of B2B and 5G gNodeBs
 # documentation on pandas merge https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html?highlight=merge#pandas.DataFrame.merge
 f_merged = f_sites.merge(f_gens, left_on="PSLC", right_on="PSLC", how="left")
-#f_merged = f_merged.merge(f_pge, left_on="PSLC", right_on="PSLC", how="left")
+#f_merged = f_merged.merge(f_pge_outage_block, left_on="POWER METER", right_on="Meter #", how="left")
 f_merged = f_merged.merge(f_cells, left_on="PSLC", right_on="PSLC", how="left")
 f_merged = f_merged.merge(f_cells5g, left_on="PSLC", right_on="PSLC", how="left")
 
@@ -58,6 +65,10 @@ frames_pgemaster = [f_pgemaster]
 concat_pgemaster = pd.concat(frames_pgemaster)
 frames_ngmaster = [f_ngmaster]
 concat_ngmaster = pd.concat(frames_ngmaster)
+frames_pge_outage_block = [f_pge_outage_block]
+concat_pge_outage_block = pd.concat(frames_pge_outage_block)
+frames_3rdpartymaster = [f_3rdpartymaster]
+concat_3rdpartymaster = pd.concat(frames_3rdpartymaster)
 
 concat_ops['GEN Y/N'] = concat_ops['GEN Y/N'].fillna(0)
 concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].fillna(0)
@@ -90,6 +101,8 @@ concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER 
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
+concat_pge_outage_block.to_excel(writer, index=False, sheet_name="PGEOUTAGEBLOCKS", columns=['Meter #', 'Rotating Outage Block Code'])
+concat_3rdpartymaster.to_excel(writer, index=False, sheet_name="3RDPARTY", columns=['PSLC', '3RD PARTY'])
 # Establish the workbook variable
 workbook = writer.book
 
@@ -113,11 +126,11 @@ worksheet.set_column('O:O', 18, cell_format_center)
 worksheet.set_column('P:Q', 12, cell_format_center)
 worksheet.set_column('R:R', 15, cell_format_center)
 worksheet.set_column('S:T', 20, cell_format_center)
-worksheet.set_column('U:V', 15, cell_format_center)
-worksheet.set_column('W:Y', 19, cell_format_center)
+worksheet.set_column('U:W', 15, cell_format_center)
+worksheet.set_column('X:Y', 19, cell_format_center)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet.freeze_panes(1, 0)
-worksheet.autofilter('A1:X9999')
+worksheet.autofilter('A1:Z9999')
 # Save the sheet
 writer.save()
 
