@@ -18,8 +18,12 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
 f_sites = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GO95_FIRE_ZONE_SECTOR', 'SITE_STATUS', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY'])
 f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_generators.xlsx", usecols=['PSLC', 'GEN_STATUS', 'SERIALNUM', 'FUEL_TANK1', 'FUEL_TYPE1', 'MANUFACTURER', 'MODEL', 'GEN_SIZE'])
-# Rename column names for Gennie
+#f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/Asset_Generator_WS_Full_Data_data.xlsx", usecols=['PSLC_CODE', 'STATUS', 'SERIAL_NUMBER', 'GENERATOR_SIZE', 'FUEL_TYPE (CMPL_GENERATOR_SPEC)'])
+
+# Rename column names for Gennie, using OT file
 g={'GEN_STATUS':'GEN Y/N','FUEL_TANK1':'TANK SIZE','GEN_SIZE':'GEN SIZE','FUEL_TYPE1':'FUEL TYPE'}
+# New rename for Fuze gen version
+#g={'PSLC_CODE':'PSLC','STATUS':'GEN Y/N','GENERATOR_SIZE':'TANK SIZE','FUEL_TYPE (CMPL_GENERATOR_SPEC)':'FUEL TYPE'}
 s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','POWER_COMPANY':'POWER COMPANY','SITE_STATUS':'SITE STATUS'}
 f_gens.rename(columns = g, inplace = True)
 f_sites.rename(columns = s, inplace = True)
@@ -97,7 +101,7 @@ concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
+concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','NOTES', 'POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
@@ -108,26 +112,39 @@ workbook = writer.book
 
 # Setup some formating definitions
 # formatting for any cells/columns that need to be center justified
+header_format = workbook.add_format()
+header_format.set_bold()
+header_format.set_align('center')
+header_format.set_text_wrap()
+
 cell_format_center = workbook.add_format()
 cell_format_center.set_align('center')
+cell_format_center.set_text_wrap()
+cell_format_left = workbook.add_format()
+cell_format_left.set_align('left')
+cell_format_left.set_text_wrap()
 # Define the worksheet variable
 worksheet = writer.sheets['PSPS_MAIN']
 # Apply some formatting to groups of columns, including cell width and applying the cell formatting previously defined as appropriate
-worksheet.set_column('A:B', 18, cell_format_center)
-worksheet.set_column('C:E', 9, cell_format_center)
-worksheet.set_column('F:F', 45, cell_format_center)
-worksheet.set_column('G:G', 44)
-worksheet.set_column('H:I', 22)
-worksheet.set_column('J:J', 12, cell_format_center)
-worksheet.set_column('K:K', 13, cell_format_center)
-worksheet.set_column('L:M', 14, cell_format_center)
-worksheet.set_column('N:N', 14, cell_format_center)
-worksheet.set_column('O:O', 18, cell_format_center)
-worksheet.set_column('P:Q', 12, cell_format_center)
-worksheet.set_column('R:R', 15, cell_format_center)
-worksheet.set_column('S:T', 20, cell_format_center)
-worksheet.set_column('U:W', 15, cell_format_center)
-worksheet.set_column('X:Y', 19, cell_format_center)
+worksheet.set_row(0, None, header_format)
+worksheet.set_column('A:A', 16, cell_format_center)
+worksheet.set_column('B:B', 12, cell_format_center)
+worksheet.set_column('C:C', 20, cell_format_center)
+worksheet.set_column('D:D', 9, cell_format_center)
+worksheet.set_column('E:E', 8, cell_format_center)
+worksheet.set_column('F:F', 9, cell_format_center)
+worksheet.set_column('G:G', 37, cell_format_left)
+worksheet.set_column('H:H', 44, cell_format_left)
+worksheet.set_column('I:I', 22, cell_format_left)
+worksheet.set_column('J:J', 16.5, cell_format_left)
+worksheet.set_column('K:M', 11, cell_format_center)
+worksheet.set_column('N:N', 9,  cell_format_center)
+worksheet.set_column('O:P', 14, cell_format_center)
+worksheet.set_column('Q:S', 9,  cell_format_center)
+worksheet.set_column('T:T', 20, cell_format_left)
+worksheet.set_column('U:U', 16, cell_format_left)
+worksheet.set_column('V:V', 17, cell_format_center)
+worksheet.set_column('W:Y', 19, cell_format_center)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet.freeze_panes(1, 0)
 worksheet.autofilter('A1:Z9999')
