@@ -13,6 +13,12 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # Also need to make sure you export OpsTracker files with the file name option checked, and change the filter to get -all- sites
 # Raw data files need to be here: /Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/
 # Output files will go here: /Users/txvance/Documents/PSPS/Tracker/
+# 2023/06 Notes for what to do after the file is created: 
+# add vlookup in col X to check if it's on the PGEMASTERLIST based on A2: =VLOOKUP($A2,PGEMASTERLIST!A:A,1,FALSE)
+# add vlookup in col Y for comparison to Nat Gas master: =VLOOKUP($F2,NGMASTERLIST!A:A,1,FALSE)
+# add vlookup in col Z to see what outage block: =VLOOKUP($A2,PGEOUTAGEBLOCKS!A:B,2,FALSE)
+# add vlookup in col AA to see if its a 3rd party site: =VLOOKUP($F2,'3RDPARTY'!A:A,1,FALSE)
+
  
 # reading only the columns needed from each file
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
@@ -148,8 +154,8 @@ worksheet.set_column('W:Y', 19, cell_format_center)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet.freeze_panes(1, 0)
 worksheet.autofilter('A1:Z9999')
-# Save the sheet
-writer.save()
+# Save the sheet, using new command for panda as writer.save() was deprecated 2023/06
+writer.close()
 
 # Format the PSPS_MAIN_SP sheet for SP
 # establish the xlsxwriter functionality, defining "writer" as the variable for the workbook filename
@@ -181,5 +187,5 @@ worksheet_sp.set_column('J:K', 12, cell_format_center_sp)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet_sp.freeze_panes(1, 0)
 worksheet_sp.autofilter('A1:K9999')
-# Save the sheet
-writer_sp.save()
+# Save the sheet, using new command for panda as writer.save() was deprecated 2023/06
+writer.close()
