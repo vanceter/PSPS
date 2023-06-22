@@ -13,7 +13,7 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # Also need to make sure you export OpsTracker files with the file name option checked, and change the filter to get -all- sites
 # Raw data files need to be here: /Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/
 # Output files will go here: /Users/txvance/Documents/PSPS/Tracker/
-# 2023/06 Notes for what to do after the file is created: 
+# 2023/06 Notes for what to do after the file is created - run macro Format_PSPS: 
 # add vlookup in col X to check if it's on the PGEMASTERLIST based on A2: =VLOOKUP($A2,PGEMASTERLIST!A:A,1,FALSE)
 # add vlookup in col Y for comparison to Nat Gas master: =VLOOKUP($F2,NGMASTERLIST!A:A,1,FALSE)
 # add vlookup in col Z to see what outage block: =VLOOKUP($A2,PGEOUTAGEBLOCKS!A:B,2,FALSE)
