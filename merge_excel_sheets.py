@@ -13,16 +13,14 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # Also need to make sure you export OpsTracker files with the file name option checked, and change the filter to get -all- sites
 # Raw data files need to be here: /Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/
 # Output files will go here: /Users/txvance/Documents/PSPS/Tracker/
-# 2023/06 Notes for what to do after the file is created - run macro Format_PSPS: 
-# add vlookup in col X to check if it's on the PGEMASTERLIST based on A2: =VLOOKUP($A2,PGEMASTERLIST!A:A,1,FALSE)
-# add vlookup in col Y for comparison to Nat Gas master: =VLOOKUP($F2,NGMASTERLIST!A:A,1,FALSE)
-# add vlookup in col Z to see what outage block: =VLOOKUP($A2,PGEOUTAGEBLOCKS!A:B,2,FALSE)
-# add vlookup in col AA to see if its a 3rd party site: =VLOOKUP($F2,'3RDPARTY'!A:A,1,FALSE)
+# 2023/06 Notes for what to do after the file is created - run macro Format_PSPS in excel: 
+# macro saved in personal macro on macbook as: PSPS_Format().vb
+
 
  
 # reading only the columns needed from each file
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
-f_sites = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GO95_FIRE_ZONE_SECTOR', 'SITE_STATUS', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY'])
+f_sites = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_sites.xlsx", usecols=['SITE_NAME','ADDRESS','CITY','COUNTY','PSLC','POWER_METER', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'GO95_FIRE_ZONE_SECTOR', 'SITE_STATUS', 'IS_HUB','IS_HUB_MICROWAVE','REMOTE_MONITORING','SITETECH_NAME','SITEMGR_NAME', 'POWER_COMPANY', 'MDG_ID'])
 f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstracker_generators.xlsx", usecols=['PSLC', 'GEN_STATUS', 'SERIALNUM', 'FUEL_TANK1', 'FUEL_TYPE1', 'MANUFACTURER', 'MODEL', 'GEN_SIZE'])
 #f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/Asset_Generator_WS_Full_Data_data.xlsx", usecols=['PSLC_CODE', 'STATUS', 'SERIAL_NUMBER', 'GENERATOR_SIZE', 'FUEL_TYPE (CMPL_GENERATOR_SPEC)'])
 
@@ -107,7 +105,7 @@ concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','NOTES', 'POWER COMPANY','FIRE TIER', 'PSPS PROB','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
+concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','NOTES', 'POWER COMPANY','FIRE TIER', 'PSPS PROB', 'MDG_ID','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)','PSPS PROB'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
@@ -138,12 +136,13 @@ worksheet.set_column('B:B', 12, cell_format_center)
 worksheet.set_column('C:C', 20, cell_format_center)
 worksheet.set_column('D:D', 9, cell_format_center)
 worksheet.set_column('E:E', 8, cell_format_center)
-worksheet.set_column('F:F', 9, cell_format_center)
-worksheet.set_column('G:G', 37, cell_format_left)
-worksheet.set_column('H:H', 44, cell_format_left)
-worksheet.set_column('I:I', 22, cell_format_left)
-worksheet.set_column('J:J', 16.5, cell_format_left)
-worksheet.set_column('K:M', 11, cell_format_center)
+worksheet.set_column('F:F', 12, cell_format_center)
+worksheet.set_column('G:G', 9, cell_format_center)
+worksheet.set_column('H:H', 37, cell_format_left)
+worksheet.set_column('I:I', 44, cell_format_left)
+worksheet.set_column('J:J', 22, cell_format_left)
+worksheet.set_column('K:K', 16.5, cell_format_left)
+worksheet.set_column('L:M', 11, cell_format_center)
 worksheet.set_column('N:N', 9,  cell_format_center)
 worksheet.set_column('O:P', 14, cell_format_center)
 worksheet.set_column('Q:S', 9,  cell_format_center)
@@ -153,7 +152,7 @@ worksheet.set_column('V:V', 17, cell_format_center)
 worksheet.set_column('W:Y', 19, cell_format_center)
 # Set some worksheet formatting, including creating filter dropdowns and freeze the top row
 worksheet.freeze_panes(1, 0)
-worksheet.autofilter('A1:Z9999')
+worksheet.autofilter('A1:AC9999')
 # Save the sheet, using new command for panda as writer.save() was deprecated 2023/06
 writer.close()
 
@@ -188,4 +187,4 @@ worksheet_sp.set_column('J:K', 12, cell_format_center_sp)
 worksheet_sp.freeze_panes(1, 0)
 worksheet_sp.autofilter('A1:K9999')
 # Save the sheet, using new command for panda as writer.save() was deprecated 2023/06
-writer.close()
+#writer.close()
