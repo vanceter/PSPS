@@ -28,7 +28,7 @@ f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstr
 g={'GEN_STATUS':'GEN Y/N','FUEL_TANK1':'TANK SIZE','GEN_SIZE':'GEN SIZE','FUEL_TYPE1':'FUEL TYPE'}
 # New rename for Fuze gen version
 #g={'PSLC_CODE':'PSLC','STATUS':'GEN Y/N','GENERATOR_SIZE':'TANK SIZE','FUEL_TYPE (CMPL_GENERATOR_SPEC)':'FUEL TYPE'}
-s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','SITE_STATUS':'SITE STATUS'}
+s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','SITE_STATUS':'SITE STATUS','MDG_ID':'MDGLC'}
 f_gens.rename(columns = g, inplace = True)
 f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
@@ -106,7 +106,7 @@ concat_ops['PLUG Y/N'] = concat_ops['PLUG Y/N'].map(map_dict_gen)
 writer = pd.ExcelWriter('/Users/txvance/Documents/PSPS/Tracker/PSPS_MAIN.xlsx', engine='xlsxwriter')
 # Create the merged sheet and output to the file name based on the writer variable
 #f_merged_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER_METER','Fire Tier', 'PSPS PROB','PSLC', 'PG&E Fee Property', 'SITE_NAME', 'ADDRESS','CITY','COUNTY', 'GEN_STATUS','FUEL_TYPE1', 'GEN_PORTABLE_PLUG', 'GEN_PORTABLE_PLUG_TYPE', 'REMOTE_MONITORING', 'IS_HUB_MICROWAVE', 'IS_HUB','SITETECH_NAME','SITETECH_MANAGER_NAME', 'POWER_COMPANY'])
-concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','NOTES', 'POWER COMPANY','FIRE TIER', 'PSPS PROB', 'MDG_ID','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
+concat_ops.to_excel(writer, index=False, sheet_name='PSPS_MAIN',columns=['POWER METER','NOTES', 'POWER COMPANY','FIRE TIER', 'PSPS PROB', 'MDGLC','PSLC', 'SITE NAME', 'ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'GEN SIZE', 'FUEL TYPE', 'TANK SIZE', 'RM Y/N', 'HUB Y/N','M/W HUB Y/N', 'FIELD ENGINEER','OPS MANAGER', 'SITE STATUS', 'NOTES'])
 # Add second tab to the PSPS_MAIN file to pull in the PGE master and a VLOOKUP command, used to check if anything is missing on the PSPS_MAIN, and what on the PSPS_MAIN is in scope
 concat_pgemaster.to_excel(writer, index=False, sheet_name="PGEMASTERLIST", columns=['PGE_BADGE_NUMBER', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!A:A,1,FALSE)','PSPS PROB'])
 concat_ngmaster.to_excel(writer, index=False, sheet_name="NGMASTERLIST", columns=['PSLC', 'VLOOKUP($A1,[PSPS_MAIN.xlsx]PSPS_MAIN!E:E,1,FALSE)'])
