@@ -28,7 +28,7 @@ f_gens = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/opstr
 g={'GEN_STATUS':'GEN Y/N','FUEL_TANK1':'TANK SIZE','GEN_SIZE':'GEN SIZE','FUEL_TYPE1':'FUEL TYPE'}
 # New rename for Fuze gen version
 #g={'PSLC_CODE':'PSLC','STATUS':'GEN Y/N','GENERATOR_SIZE':'TANK SIZE','FUEL_TYPE (CMPL_GENERATOR_SPEC)':'FUEL TYPE'}
-s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','POWER_COMPANY':'POWER COMPANY','SITE_STATUS':'SITE STATUS'}
+s={'SITE_NAME':'SITE NAME','GO95_FIRE_ZONE_SECTOR':'FIRE TIER', 'GEN_PORTABLE_PLUG':'PLUG Y/N','GEN_PORTABLE_PLUG_TYPE':'PLUG TYPE','REMOTE_MONITORING':'RM Y/N','IS_HUB':'HUB Y/N', 'IS_HUB_MICROWAVE':'M/W HUB Y/N','SITETECH_NAME':'FIELD ENGINEER','SITEMGR_NAME':'OPS MANAGER','POWER_COMPANY':'POWER COMPANY','POWER_METER':'POWER METER','SITE_STATUS':'SITE STATUS'}
 f_gens.rename(columns = g, inplace = True)
 f_sites.rename(columns = s, inplace = True)
 f_cells = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/NorCal_CellInfo.xlsx", usecols=['PSLC', 'eNodeB'])
@@ -46,6 +46,7 @@ f_3rdpartymaster = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_F
 # Static files to capture sites that PGE provided but aren't in OT yet. Will result in some duplication, including sites with multiple meters
 f_vzb = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_VZB_Sites.xlsx")
 f_unmatched = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_PGE_unmatched_Sites.xlsx", usecols=['POWER METER','PSPS PROB', 'PSLC','SITE NAME','ADDRESS','CITY','COUNTY', 'GEN Y/N', 'PLUG Y/N', 'PLUG TYPE', 'FUEL TYPE', 'RM Y/N', 'M/W HUB Y/N', 'HUB Y/N', 'FIELD ENGINEER', 'OPS MANAGER', 'POWER COMPANY'])
+#f_unmatched = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_PGE_unmatched_Sites.xlsx")
 f_engie = pd.read_excel("/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/PSPS_Engie_unmatched_Sites.xlsx")
 
 # merging the files using PSLC as the index. There are some duplicates in gen and sites files, lots of duplicates in the cell info because of B2B and 5G gNodeBs
@@ -87,7 +88,7 @@ concat_ops['HUB Y/N'] = concat_ops['HUB Y/N'].fillna(0)
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
 
 # Bulk replace 0 for No and 1 for yes in the various columns
-map_dict = {0:'NO', 1:'YES',"VZB FACILITY":"VZB FACILITY", "FRONTIER FACILITY":"FRONTIER FACILITY","VZW RETAIL SALES":"VZW RETAIL SALES", "Operational":"YES","Y":"YES","N":"NO","NO":"NO","YES":"YES", "Diesel":"Diesel", "Propane":"Propane", "Pacific Gas & Electric":"PG&E"}
+map_dict = {0:'NO', 1:'YES',"VZB FACILITY":"VZB FACILITY", "FRONTIER FACILITY":"FRONTIER FACILITY","VZW RETAIL SALES":"VZW RETAIL SALES", "Operational":"YES","Y":"YES","N":"NO","NO":"NO","YES":"YES", "Diesel":"Diesel", "Propane":"Propane", "Pacific Gas & Electric":"PG&E", "PGE":"PG&E"}
 concat_ops['PG&E Fee Property'] = concat_ops['PG&E Fee Property'].map(map_dict)
 concat_ops['FUEL TYPE'] = concat_ops['FUEL TYPE'].map(map_dict)
 concat_ops['POWER COMPANY'] = concat_ops['POWER COMPANY'].map(map_dict)
