@@ -1,0 +1,2 @@
+# Just testing to see if this will work, allowing me to create a text file and sync it to git for future reference. No reason why it shouldn't work.
+# I wonder if I'll need to put # in front of all liens to comment it out... shouldn't matter unless I try to run it.
