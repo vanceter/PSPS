@@ -15,8 +15,6 @@ file_path_raw = "/Users/txvance/Documents/PSPS/OpsTracker_Raw_Files/"
 # Output files will go here: /Users/txvance/Documents/PSPS/Tracker/
 # 2023/06 Notes for what to do after the file is created - run macro Format_PSPS in excel: 
 # macro saved in personal macro on macbook as: PSPS_Format().vb
-
-
  
 # reading only the columns needed from each file
 # documentation on pandas read_excel https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
